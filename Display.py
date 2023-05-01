@@ -12,6 +12,9 @@ st.title("Mood Tracker Analysis")
 start_date = st.date_input("Start Date", value =pd.to_datetime("2020-01-01"))
 end_date = st.date_input("End Date", value=pd.to_datetime("today"))
 
+avgMood = getAvgMood(start_date,end_date)
+st.write(f"Average mood between {start_date} - {end_date}: {avgMood}")
+
 monthly_scores = getMonthlyScores()
 st.subheader("Monthly Mood Scores")
 st.dataframe(monthly_scores)
@@ -25,7 +28,7 @@ st.write(f"The avg mood for {year} is {round(yearly_avg_moodscore, 2)}")
 
 # Plot weekday mood scores
 st.subheader("Weekday Mood Scores")
-weekday_chart = plot_weekday_moodscores(df, year)
+weekday_chart = plot_weekday_moodscores(df, start_date, end_date)
 st.altair_chart(weekday_chart, use_container_width=True)
 
 # Plot moodscore histograms

@@ -26,6 +26,17 @@ def getMonthlyScores():
 
 monthlymoodscore = getMonthlyScores()
 
+def getAvgMood(start_date, finish_date):
+    # Convert start_date and finish_date to pd.Timestamp objects
+    start_date = pd.Timestamp(start_date)
+    finish_date = pd.Timestamp(finish_date)
+
+    date_mask = (df['date'] >= start_date) & (df['date'] <= finish_date)
+    date_data = df[date_mask]
+
+    date_avg_moodscore = date_data['moodscore'].mean()
+    return date_avg_moodscore.round(2)
+
 def plot_yearly_moodscores(year):
     # Filter the monthly moodscores for the given year
     year_mask = monthlymoodscore['MonthYear'].str.endswith(str(year)[-2:])
@@ -77,16 +88,19 @@ def plot_yearly_moodscores(year):
     )
     return fig,yearly_avg_moodscore
 
-def plot_weekday_moodscores(df, year=None):
-    # Filter the dataframe for the given year
-    if year:
-        year_mask = df['date'].dt.year == year
-        year_data = df[year_mask]
+def plot_weekday_moodscores(df, start_date=None, end_date=None):
+    start_date = pd.Timestamp(start_date)
+    end_date = pd.Timestamp(end_date)
+    
+    # Filter the dataframe for the given start and end dates
+    if start_date and end_date:
+        date_mask = (df['date'] >= start_date) & (df['date'] <= end_date)
+        date_data = df[date_mask]
     else:
-        year_data = df
+        date_data = df
     
     # Group the data by day of the week and calculate the mean mood score
-    weekday_moodscores = year_data.groupby('weekday')['moodscore'].mean().reset_index()
+    weekday_moodscores = date_data.groupby('weekday')['moodscore'].mean().reset_index()
     
     # Find the day with the highest mood score
     max_day = weekday_moodscores.loc[weekday_moodscores['moodscore'].idxmax(), 'weekday']
@@ -112,8 +126,8 @@ def plot_weekday_moodscores(df, year=None):
         )
     )
 
-    if year:
-        chart = chart.properties(title=f'Average Mood Scores by Day of the Week in {year}')
+    if start_date and end_date:
+        chart = chart.properties(title=f'Average Mood Scores by Day of the Week from {start_date.date()} to {end_date.date()}')
     else:
         chart = chart.properties(title='Average Mood Scores by Day of the Week lifetime')
 
@@ -185,9 +199,11 @@ def plot_good_bad_piechart(df, start_date, finish_date):
         'count': [good_count, bad_count, ok_count]
     })
 
+    color_scale = alt.Scale(domain=['Positive', 'Negative', 'Ok'], range=['green', 'blue', 'purple'])
+
     chart = alt.Chart(data).mark_arc(innerRadius=0).encode(
         alt.Theta('count:Q', stack=True),
-        alt.Color('category:N', scale=alt.Scale(scheme='category10'))
+        alt.Color('category:N', scale=color_scale)
     ).properties(
         width=300,
         height=200
