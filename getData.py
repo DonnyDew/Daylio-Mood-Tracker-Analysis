@@ -4,7 +4,7 @@ import pandas as pd
 mood_score_map = {'rad': 5, 'almost Rad': 4.5, 'good': 4, 'Solid': 3, 'okay': 2, 'meh': 1, 'bad': 0}
 
 # Read the CSV file into a pandas dataframe
-df = pd.read_csv('daylio_export_2023_12_01.csv')
+df = pd.read_csv('daylio_export_2024_04_02.csv')
 
 # Convert the full_date column to a datetime format
 df['full_date'] = pd.to_datetime(df['full_date'], format='%Y-%m-%d')

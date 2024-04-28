@@ -436,3 +436,45 @@ def keyword_percentage(df, start_date, end_date, keyword):
 
     percentage = (keyword_days / total_days) * 100
     return round(percentage, 2)
+
+def plot_moodscores_between_monthyears(start_monthyear, end_monthyear):
+    # Convert month-years to datetime for filtering
+    monthlymoodscore['MonthYear_dt'] = pd.to_datetime(monthlymoodscore['MonthYear'], format='%b%y')
+    start_dt = pd.to_datetime(start_monthyear, format='%b%y')
+    end_dt = pd.to_datetime(end_monthyear, format='%b%y')
+
+    # Filter the monthly moodscores for the given range
+    range_mask = (monthlymoodscore['MonthYear_dt'] >= start_dt) & (monthlymoodscore['MonthYear_dt'] <= end_dt)
+    range_moodscores = monthlymoodscore[range_mask]
+    range_avg_moodscore = range_moodscores['average_moodscore'].mean()
+    
+    # Create a Plotly bar chart
+    fig = go.Figure(data=[go.Bar(
+        x=range_moodscores['MonthYear'],
+        y=range_moodscores['average_moodscore'],
+        text=range_moodscores['average_moodscore'],
+        textposition='auto',
+        hovertemplate='<b>%{x}</b><br>Average Mood Score: %{y:.2f}',
+        marker=dict(
+            color=range_moodscores['average_moodscore'],
+            colorscale='RdYlGn',
+            showscale=True,
+            cmax=5,
+            cmin=0
+        )
+    )])
+
+    # Update chart layout
+    fig.update_layout(
+        title=f"Monthly Mood Scores from {start_monthyear} to {end_monthyear}",
+        xaxis_title="Month",
+        yaxis_title="Average Mood Score",
+        font=dict(family="Arial", size=14, color="#333333"),
+        plot_bgcolor='#FFFFFF',
+        xaxis=dict(tickfont=dict(size=12)),
+        yaxis=dict(tickfont=dict(size=12), range=[0, 5],
+            tickmode='array', tickvals=[0, 1, 2, 3, 4, 5], ticktext=['bad', 'meh', 'okay', 'Solid', 'good', 'rad']),
+        margin=dict(l=60, r=60, t=80, b=60)
+    )
+    fig.update_layout(width=1600)
+    return fig, range_avg_moodscore

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from getData import df
 from getFeatures import *
+import datetime
 
 st.set_page_config(layout="wide")
 
@@ -25,6 +26,19 @@ year = st.selectbox("Select Year", options=sorted(df['date'].dt.year.unique(), r
 fig,yearly_avg_moodscore = plot_yearly_moodscores(year)
 st.plotly_chart(fig)
 st.write(f"The avg mood for {year} is {round(yearly_avg_moodscore, 2)}")
+
+#More Months
+current_date = pd.Timestamp.now()
+monthyear_options = pd.date_range('2019-01', current_date, freq='MS').strftime('%b%y').tolist()
+
+# Streamlit UI to input the month-year range
+start_monthyear = st.selectbox("Select Start Month-Year", options=monthyear_options)
+end_monthyear = st.selectbox("Select End Month-Year", options=monthyear_options, index=monthyear_options.index(current_date.strftime('%b%y')))
+
+if start_monthyear and end_monthyear:
+    fig, range_avg_moodscore = plot_moodscores_between_monthyears(start_monthyear, end_monthyear)
+    st.plotly_chart(fig)
+    st.write(f"Average Mood Score from {start_monthyear} to {end_monthyear}: {range_avg_moodscore:.2f}")
 
 # Plot weekday mood scores
 st.subheader("Weekday Mood Scores")
